@@ -7,7 +7,8 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,11 +25,15 @@ import java.util.Set;
 
 
 public class MainActivity extends ActionBarActivity {
+    EditText imieTxt=null;
+    EditText nazwiskoTxt=null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        imieTxt=(EditText)findViewById(R.id.ImieTxt);
+        nazwiskoTxt=(EditText)findViewById(R.id.nazwiskoTxt);
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -57,21 +62,29 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void OnClickTestGetHttp(View view) {
-        TextView txt=(TextView)findViewById(R.id.getText);
-        String t= "";
+
+
         try {
+            String t= "";
             ContentValues vals=new ContentValues();
-            vals.put("login", 567);
-            vals.put("id2", 125);
             t = getResponseFromServer("http://192.168.56.1:8080/?id=89", vals);
-           // t = getResponseFromServer("http://twojeip.wp.pl/?ticaid=115231", vals);
 
-            //
+            if(t!=null) {
+                String[] tab = t.split(";");
+                if(tab!=null && tab.length>1) {
+                    imieTxt.setText(tab[0]);
+                    nazwiskoTxt.setText(tab[1]);
+                }
+                else {
+                    imieTxt.setText("");
+                    nazwiskoTxt.setText("");
+                }
+            }
+
         } catch (Exception e) {
-            e.printStackTrace();
+            imieTxt.setText("");
+            nazwiskoTxt.setText("");
         }
-
-        txt.setText(t);
     }
 
     public String getResponseFromServer(String address, ContentValues vals) throws Exception {
@@ -155,5 +168,24 @@ public class MainActivity extends ActionBarActivity {
             }
         }
         return sb.toString();
+    }
+
+    public void OnClickSendInfo(View view) {
+        try {
+            String t = "";
+            ContentValues v = new ContentValues();
+            v.put("imie", this.imieTxt.getText().toString());
+            v.put("nazwisko", this.nazwiskoTxt.getText().toString());
+
+            t = getResponseFromServer("http://192.168.56.1:8080/new_person.php", v);
+            if (t!=null)
+            {
+                Toast.makeText(this, t, Toast.LENGTH_SHORT).show();
+            }
+        }
+        catch (Exception ex)
+        {
+
+        }
     }
 }
